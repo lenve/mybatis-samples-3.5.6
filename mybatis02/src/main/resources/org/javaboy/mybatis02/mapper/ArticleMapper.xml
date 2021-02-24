@@ -1,0 +1,46 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.javaboy.mybatis02.mapper.ArticleMapper">
+
+    <select id="getArticleById" resultType="org.javaboy.mybatis02.model.Article">
+        select a.*,au.id as "author.id",au.name as "author.name",au.age as "author.age" from article a,author au where a.aid=au.id and a.id=#{id}
+    </select>
+
+    <resultMap id="BaseArticleMap" type="org.javaboy.mybatis02.model.Article">
+        <id property="id" column="id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+    </resultMap>
+    <resultMap id="ArticleMap" type="org.javaboy.mybatis02.model.Article" extends="BaseArticleMap">
+        <result property="author.id" column="author_id"/>
+        <result property="author.name" column="author_name"/>
+        <result property="author.age" column="author_age"/>
+    </resultMap>
+
+    <resultMap id="ArticleMap2" type="org.javaboy.mybatis02.model.Article" extends="BaseArticleMap">
+        <association property="author" javaType="org.javaboy.mybatis02.model.Author" columnPrefix="author_" resultMap="org.javaboy.mybatis02.mapper.AuthorMapper.AuthorMap">
+<!--            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="age" column="age"/>-->
+        </association>
+    </resultMap>
+
+    <select id="getArticleById2" resultMap="ArticleMap">
+        select a.*,au.id as author_id,au.name as author_name,au.age as author_age from article a,author au where a.aid=au.id and a.id=#{id}
+    </select>
+
+
+    <select id="getArticleById3" resultMap="ArticleMap2">
+        select a.*,au.id as author_id,au.name as author_name,au.age as author_age from article a,author au where a.aid=au.id and a.id=#{id}
+    </select>
+
+    <resultMap id="ArticleMap4" type="org.javaboy.mybatis02.model.Article" extends="BaseArticleMap">
+        <association property="author" javaType="org.javaboy.mybatis02.model.Author" select="org.javaboy.mybatis02.mapper.AuthorMapper.getAuthorById" column="{id=aid}" fetchType="lazy"></association>
+    </resultMap>
+
+    <select id="getArticleById4" resultMap="ArticleMap4">
+        select * from article where id=#{id};
+    </select>
+
+</mapper>

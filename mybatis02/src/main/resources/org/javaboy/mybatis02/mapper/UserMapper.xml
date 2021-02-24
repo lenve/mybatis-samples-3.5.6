@@ -1,0 +1,90 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.javaboy.mybatis02.mapper.UserMapper">
+
+    <select id="getAllUsers2" resultType="java.util.HashMap">
+        select * from user;
+    </select>
+
+    <select id="getUserCount" resultType="java.lang.Long">
+        select count(*) from user
+    </select>
+
+    <select id="getAllUsers" resultType="org.javaboy.mybatis02.model.User">
+        select * from user;
+    </select>
+
+    <select id="getUserById" resultType="org.javaboy.mybatis02.model.User">
+        select * from user where id=${id};
+    </select>
+
+    <select id="getUserOrderBy" resultType="org.javaboy.mybatis02.model.User" parameterType="java.lang.String">
+        select * from user order by ${orderby} desc;
+    </select>
+
+    <!--    <select id="getUserNameContains" resultType="org.javaboy.mybatis02.model.User" parameterType="java.lang.String">
+            select * from user where username like '%${name}%';
+        </select>-->
+    <select id="getUserNameContains" resultType="org.javaboy.mybatis02.model.User" parameterType="java.lang.String">
+        select * from user where username like concat('%',#{name},'%');
+    </select>
+
+    <update id="updateUsernameById">
+        update user set username=#{username} where id=#{id}
+    </update>
+
+    <!--    <insert id="addUser" parameterType="org.javaboy.mybatis02.model.User" useGeneratedKeys="true" keyProperty="id">
+            insert into user (username,address) values (#{user.username},#{user.address});
+        </insert>-->
+    <insert id="addUser" parameterType="org.javaboy.mybatis02.model.User">
+        <selectKey keyProperty="user.id" resultType="java.lang.Long" order="AFTER">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into user (username,address) values (#{user.username},#{user.address});
+    </insert>
+
+    <insert id="addUser2" parameterType="java.util.HashMap">
+        insert into user (username,address) values (#{user.username},#{user.address});
+    </insert>
+
+    <resultMap id="BaseUserMap" type="org.javaboy.mybatis02.model.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="address" column="address"/>
+        <result property="enabled" column="enabled"/>
+        <result property="favorites" column="favorites" typeHandler="org.javaboy.mybatis02.typehandler.List2VarcharHandler"/>
+    </resultMap>
+    <resultMap id="UserMapWithRole" type="org.javaboy.mybatis02.model.User" extends="BaseUserMap">
+        <collection property="roles" ofType="org.javaboy.mybatis02.model.Role" columnPrefix="role_"
+                    resultMap="org.javaboy.mybatis02.mapper.RoleMapper.BaseRoleMap">
+        </collection>
+    </resultMap>
+    <resultMap id="UserMapWithRole3" type="org.javaboy.mybatis02.model.User">
+        <discriminator javaType="int" column="enabled">
+            <case value="1" resultMap="UserMapWithRole"></case>
+            <case value="0" resultMap="BaseUserMap"></case>
+        </discriminator>
+    </resultMap>
+    <resultMap id="UserMapWithRole2" type="org.javaboy.mybatis02.model.User" extends="BaseUserMap">
+        <collection property="roles" ofType="org.javaboy.mybatis02.model.Role"
+                    select="org.javaboy.mybatis02.mapper.RoleMapper.getRolesByUid" column="{uid=id}" fetchType="lazy">
+        </collection>
+    </resultMap>
+
+    <select id="getAllUsersWithRole" resultMap="UserMapWithRole">
+        select u.*,r.id as role_id,r.name as role_name from user u left join user_role ur on u.id=ur.uid left join role r on ur.rid=r.id
+    </select>
+
+    <select id="getAllUsersWithRole3" resultMap="UserMapWithRole3">
+        select u.*,r.id as role_id,r.name as role_name from user u left join user_role ur on u.id=ur.uid left join role r on ur.rid=r.id
+    </select>
+
+    <select id="getAllUsersWithRole2" resultMap="UserMapWithRole2">
+        select * from user;
+    </select>
+
+    <insert id="addUser3" parameterType="org.javaboy.mybatis02.model.User">
+        insert into user (username,address,favorites) values (#{username},#{address},#{favorites,typeHandler=org.javaboy.mybatis02.typehandler.List2VarcharHandler});
+    </insert>
+</mapper>

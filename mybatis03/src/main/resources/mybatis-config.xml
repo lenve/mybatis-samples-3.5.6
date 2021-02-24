@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+<!--    <settings>
+        <setting name="cacheEnabled" value="true"/>
+    </settings>-->
+    <plugins>
+        <plugin interceptor="org.javaboy.mybatis03.plugin.CamelInterceptor"></plugin>
+        <plugin interceptor="org.javaboy.mybatis03.plugin.PageInterceptor"></plugin>
+    </plugins>
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.cj.jdbc.Driver"/>
+                <property name="url" value="jdbc:mysql:///test01?serverTimezone=Asia/Shanghai"/>
+                <property name="username" value="root"/>
+                <property name="password" value="123"/>
+            </dataSource>
+        </environment>
+    </environments>
+    <databaseIdProvider type="DB_VENDOR">
+        <property name="MySQL" value="mysql"/>
+        <property name="Oracle" value="oracle"/>
+    </databaseIdProvider>
+    <mappers>
+<!--        <mapper resource="org/javaboy/mybatis01/mapper/UserMapper.xml"/>-->
+        <package name="org.javaboy.mybatis03.mapper"/>
+    </mappers>
+</configuration>

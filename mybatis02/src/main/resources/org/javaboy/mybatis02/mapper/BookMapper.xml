@@ -1,0 +1,127 @@
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.javaboy.mybatis02.mapper.BookMapper">
+
+    <resultMap id="BookMap" type="org.javaboy.mybatis02.model.Book">
+        <!--        <constructor>
+                    <idArg column="id" name="arg0" javaType="java.lang.Long" jdbcType="BIGINT"/>
+                    <arg column="b_name" name="arg1" javaType="java.lang.String" jdbcType="VARCHAR"/>
+                    <arg column="author" name="arg2" javaType="java.lang.String" jdbcType="VARCHAR"/>
+                </constructor>-->
+        <constructor>
+            <idArg column="id" name="id"/>
+            <arg column="b_name" name="name"/>
+            <arg column="author" name="author"/>
+        </constructor>
+    </resultMap>
+
+    <select id="getAllBooks" resultMap="BookMap">
+        select * from t_book
+    </select>
+
+    <select id="getBooksByPage" resultMap="BookMap">
+        select * from t_book
+        <if test="start !=null and size!=null">
+            limit #{start},#{size}
+        </if>
+    </select>
+
+    <select id="getBookByNameOrAuthor" resultMap="BookMap" parameterType="org.javaboy.mybatis02.model.Book">
+        select * from t_book
+        where 1=1
+        <choose>
+            <when test="name!=null and name!=''">
+                and b_name=#{name}
+            </when>
+            <when test="author!=null and author!=''">
+                and author=#{author}
+            </when>
+        </choose>
+    </select>
+
+    <select id="getBookByNameOrAuthor2" resultMap="BookMap" parameterType="org.javaboy.mybatis02.model.Book">
+        select * from t_book
+        <where>
+            <if test="name!=null and name!=''">
+                and b_name=#{name}
+            </if>
+            <if test="author!=null and author!=''">
+                and author=#{author}
+            </if>
+        </where>
+    </select>
+
+
+    <select id="getBookByNameOrAuthor3" resultMap="BookMap" parameterType="org.javaboy.mybatis02.model.Book">
+        select * from t_book
+        <trim prefix="where" prefixOverrides="or ">
+            <if test="name!=null and name!=''">
+                or b_name=#{name}
+            </if>
+            <if test="author!=null and author!=''">
+                or author=#{author}
+            </if>
+        </trim>
+    </select>
+
+
+    <update id="updateBook" parameterType="org.javaboy.mybatis02.model.Book">
+        update t_book
+        <set>
+            <if test="name!=null and name!=''">
+                b_name = #{name},
+            </if>
+            <if test="author!=null and author!=''">
+                author=#{author},
+            </if>
+        </set>
+        where id=#{id};
+    </update>
+
+    <update id="updateBook2" parameterType="org.javaboy.mybatis02.model.Book">
+        update t_book
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null and name!=''">
+                b_name = #{name},
+            </if>
+            <if test="author!=null and author!=''">
+                author=#{author},
+            </if>
+        </trim>
+        where id=#{id};
+    </update>
+
+    <select id="getBooksByIds" resultMap="BookMap">
+        select * from t_book where id in
+        <foreach collection="ids" open="(" close=")" item="id" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <insert id="batchAddBook">
+        insert into t_book (b_name,author) values
+        <foreach collection="books" separator="," item="book">
+            (#{book.name},#{book.author})
+        </foreach>
+    </insert>
+
+    <update id="updateBook3">
+        update t_book
+        <set>
+            <foreach collection="map" index="key" item="val" separator=",">
+                ${key}=#{val}
+            </foreach>
+        </set>
+        where id=#{id};
+    </update>
+
+    <select id="getBooksByAuthorFirstName" resultMap="BookMap" databaseId="mysql">
+        <bind name="authorLike" value="author+'%'"/>
+        select * from t_book where author like #{authorLike};
+    </select>
+
+    <select id="getBooksByAuthorFirstName" resultMap="BookMap" databaseId="oracle">
+        select * from t_book where author like concat('%',#{author},'%');
+    </select>
+</mapper>
